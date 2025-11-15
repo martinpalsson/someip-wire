@@ -2,12 +2,18 @@ use crate::{error::*, field, packet::*, types::*};
 use core::fmt;
 
 /// A high-level representation of a Some/IP message.
+///
+/// # Creating a Repr
+///
+/// The preferred way to create a `Repr` is using `Repr::new()`, which automatically
+/// calculates the correct length field. However, you can also construct it manually
+/// using struct initialization if needed.
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Repr<'a> {
     /// Message ID (32 bits)
     pub message_id: MessageId,
-    /// Length field (32 bits)
+    /// Length field (32 bits) - automatically calculated as 8 + data.len() when using `new()`
     pub length: u32,
     /// Request ID (32 bits)
     pub request_id: RequestId,
@@ -23,8 +29,48 @@ pub struct Repr<'a> {
     pub data: &'a [u8],
 }
 
-#[allow(dead_code)]
 impl<'a> Repr<'a> {
+    /// Create a new SOME/IP message representation.
+    /// The length field is automatically calculated as 8 (header bytes) + data.len().
+    ///
+    /// # Arguments
+    ///
+    /// * `message_id` - The message ID
+    /// * `request_id` - The request ID
+    /// * `protocol_version` - Protocol version (typically 0x01)
+    /// * `interface_version` - Interface version
+    /// * `message_type` - The message type
+    /// * `return_code` - The return code
+    /// * `data` - The payload data
+    ///
+    /// # Returns
+    ///
+    /// A new `Repr` instance with the length field automatically calculated.
+    pub fn new(
+        message_id: MessageId,
+        request_id: RequestId,
+        protocol_version: u8,
+        interface_version: u8,
+        message_type: MessageType,
+        return_code: crate::types::ReturnCode,
+        data: &'a [u8],
+    ) -> Self {
+        Repr {
+            message_id,
+            length: 8 + data.len() as u32,
+            request_id,
+            protocol_version,
+            interface_version,
+            message_type,
+            return_code,
+            data,
+        }
+    }
+
+    /// Get the length field value (8 header bytes + payload length)
+    pub fn length(&self) -> u32 {
+        self.length
+    }
     pub fn parse<T>(packet: &'a Packet<T>) -> core::result::Result<Repr<'a>, Error>
     where
         T: AsRef<[u8]>,

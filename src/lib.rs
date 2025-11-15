@@ -67,25 +67,22 @@
 //! use someip_wire::payload::Repr;
 //! use someip_wire::types::{MessageId, RequestId, ClientId, MessageType, ReturnCode};
 //!
-//! let repr = Repr {
-//!     message_id: MessageId {
-//!         service_id: 0x1234,
-//!         method_id: 0x0001,
-//!     },
-//!     length: 16,
-//!     request_id: RequestId {
-//!         client_id: ClientId {
-//!             client_id_prefix: 0x00,
-//!             client_id: 0x01,
-//!         },
+//! // Use Repr::new() to automatically calculate the length field
+//! let repr = Repr::new(
+//!     MessageId { service_id: 0x1234, method_id: 0x0001 },
+//!     RequestId {
+//!         client_id: ClientId { client_id_prefix: 0x00, client_id: 0x01 },
 //!         session_id: 0x0000,
 //!     },
-//!     protocol_version: 0x01,
-//!     interface_version: 0x01,
-//!     message_type: MessageType::Response,
-//!     return_code: ReturnCode::E_OK,
-//!     data: &[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
-//! };
+//!     0x01, // protocol_version
+//!     0x01, // interface_version
+//!     MessageType::Response,
+//!     ReturnCode::E_OK,
+//!     &[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+//! );
+//!
+//! // The length field is automatically set to 16 (8 header + 8 payload)
+//! assert_eq!(repr.length, 16);
 //!
 //! let mut buffer = [0u8; 24]; // 16-byte header + 8-byte payload
 //! let mut packet = Packet::new_unchecked(&mut buffer);
@@ -156,7 +153,7 @@ mod tests {
     fn test_deconstruct_without_payload() {
         let raw_packet: [u8; 16] = [
             0x12, 0x34, 0x00, 0x01, // Message ID
-            0x00, 0x00, 0x00, 0x00, // Length
+            0x00, 0x00, 0x00, 0x08, // Length (8 header bytes, no payload)
             0x01, 0x02, 0x00, 0x01, // Request ID
             0x01, // Protocol Version
             0x01, // Interface Version
@@ -174,7 +171,7 @@ mod tests {
                 method_id: 0x0001,
             }
         );
-        assert_eq!(repr.length, 0);
+        assert_eq!(repr.length, 8); // 8 header bytes, no payload
 
         assert_eq!(
             repr.request_id,
@@ -216,7 +213,7 @@ mod tests {
                 method_id: 0x0001,
             }
         );
-        assert_eq!(repr.length, 12);
+        assert_eq!(repr.length, 12); // 8 header bytes + 4 payload bytes
 
         assert_eq!(
             repr.request_id,
@@ -252,49 +249,47 @@ mod tests {
 
         assert_eq!(
             repr,
-            Repr {
-                message_id: MessageId {
+            Repr::new(
+                MessageId {
                     service_id: 0x1234,
                     method_id: 0x0001,
                 },
-                length: 8,
-                request_id: RequestId {
+                RequestId {
                     client_id: ClientId {
                         client_id_prefix: 0x01,
                         client_id: 0x02,
                     },
                     session_id: 0x0001,
                 },
-                protocol_version: 0x01,
-                interface_version: 0x01,
-                message_type: MessageType::Request,
-                return_code: ReturnCode::E_OK,
-                data: &[],
-            }
+                0x01,
+                0x01,
+                MessageType::Request,
+                ReturnCode::E_OK,
+                &[],
+            )
         );
     }
 
     #[test]
     fn test_repr_emit() {
-        let repr = Repr {
-            message_id: MessageId {
+        let repr = Repr::new(
+            MessageId {
                 service_id: 0x1234,
                 method_id: 0x0001,
             },
-            length: 12,
-            request_id: RequestId {
+            RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x01,
                     client_id: 0x02,
                 },
                 session_id: 0x0001,
             },
-            protocol_version: 0x01,
-            interface_version: 0x01,
-            message_type: MessageType::Request,
-            return_code: ReturnCode::E_OK,
-            data: &[0xDE, 0xAD, 0xBE, 0xEF],
-        };
+            0x01,
+            0x01,
+            MessageType::Request,
+            ReturnCode::E_OK,
+            &[0xDE, 0xAD, 0xBE, 0xEF],
+        );
         let mut buffer = [0u8; 20];
         let mut packet = Packet::new_unchecked(&mut buffer);
         repr.emit(&mut packet);
