@@ -1,5 +1,9 @@
 # someip-wire
 
+[![Crates.io](https://img.shields.io/crates/v/someip-wire.svg)](https://crates.io/crates/someip-wire)
+[![Documentation](https://docs.rs/someip-wire/badge.svg)](https://docs.rs/someip-wire)
+[![License](https://img.shields.io/crates/l/someip-wire.svg)](https://github.com/martinpalsson/someip-wire#license)
+
 A `no_std` Rust crate for parsing and serializing SOME/IP (Scalable service-Oriented MiddlewarE over IP) wire protocol packets.
 
 Based on the [AUTOSAR SOME/IP Protocol Specification](https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SOMEIPProtocol.pdf).

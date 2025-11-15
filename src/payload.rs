@@ -7,7 +7,7 @@ use core::fmt;
 pub struct Repr<'a> {
     /// Message ID (32 bits)
     pub message_id: MessageId,
-    /// Payload length (32 bits)
+    /// Length field (32 bits)
     pub length: u32,
     /// Request ID (32 bits)
     pub request_id: RequestId,
@@ -31,14 +31,14 @@ impl<'a> Repr<'a> {
     {
         let buffer = packet.as_slice();
 
-        if buffer.len() < field::header::LENGTH {
+        if buffer.len() < field::header::HEADER_LENGTH {
             return Err(Error);
         }
 
         let message_id = MessageId::from_u32(u32::from_be_bytes(
             buffer[field::header::MESSAGE_ID].try_into().unwrap(),
         ));
-        let length = u32::from_be_bytes(buffer[field::header::PAYLOAD_LENGTH].try_into().unwrap());
+        let length = u32::from_be_bytes(buffer[field::header::LENGTH].try_into().unwrap());
         let request_id = RequestId::from_u32(u32::from_be_bytes(
             buffer[field::header::REQUEST_ID].try_into().unwrap(),
         ));
@@ -49,8 +49,11 @@ impl<'a> Repr<'a> {
         let return_code_byte = buffer[field::header::RETURN_CODE.start];
         let return_code = crate::types::ReturnCode::from_u8(return_code_byte).ok_or(Error)?;
 
+        // Length includes Request ID (4) + Protocol Version (1) + Interface Version (1) 
+        // + Message Type (1) + Return Code (1) + Payload = 8 bytes + payload
         let payload_start = field::header::RETURN_CODE.end;
-        let payload_end = payload_start + (length as usize);
+        let payload_length = length.saturating_sub(8); // Subtract the 8 header bytes after Message ID
+        let payload_end = payload_start + (payload_length as usize);
         if buffer.len() < payload_end {
             return Err(Error);
         }

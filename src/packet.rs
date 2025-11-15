@@ -57,7 +57,7 @@ impl<T: AsRef<[u8]>> Packet<T> {
     /// * `Result<()>` - Ok if the length is valid, otherwise an error.
     pub fn check_len(&self) -> Result<()> {
         let len = self.buffer.as_ref().len();
-        if len < field::header::LENGTH {
+        if len < field::header::HEADER_LENGTH {
             Err(Error)
         } else {
             Ok(())
@@ -99,7 +99,7 @@ impl<T: AsRef<[u8]>> Packet<T> {
     ///
     /// * `usize` - The Payload Length of the packet
     pub fn payload_length(&self) -> usize {
-        NetworkEndian::read_u32(&self.buffer.as_ref()[field::header::PAYLOAD_LENGTH]) as usize
+        NetworkEndian::read_u32(&self.buffer.as_ref()[field::header::LENGTH]) as usize
     }
 
     /// Returns the Request ID
@@ -155,8 +155,8 @@ impl<T: AsRef<[u8]>> Packet<T> {
     ///
     /// * `Range<usize>` - The range of the payload data.
     pub fn payload_data_range(&self) -> core::ops::Range<usize> {
-        field::header::RETURN_CODE.end
-            ..field::header::RETURN_CODE.end + self.payload_length() as usize
+        let payload_len = self.payload_length().saturating_sub(8); // Subtract 8 header bytes from SOME/IP length field
+        field::header::RETURN_CODE.end..field::header::RETURN_CODE.end + payload_len as usize
     }
 
     /// Returns the length of the payload data.
@@ -165,7 +165,7 @@ impl<T: AsRef<[u8]>> Packet<T> {
     ///
     /// * `usize` - The length of the payload data.
     pub fn payload_data_length(&self) -> usize {
-        self.payload_length() as usize
+        self.payload_length().saturating_sub(8) as usize // Subtract 8 header bytes from SOME/IP length field
     }
 }
 
@@ -188,7 +188,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> Packet<T> {
     /// * `length` - The new Payload Length to set
     pub fn set_payload_length(&mut self, length: u32) {
         NetworkEndian::write_u32(
-            &mut self.buffer.as_mut()[field::header::PAYLOAD_LENGTH],
+            &mut self.buffer.as_mut()[field::header::LENGTH],
             length,
         );
     }
@@ -261,7 +261,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Packet<&'a T> {
     #[inline]
     pub fn entire_message(&self) -> &'a [u8] {
         let data = self.buffer.as_ref();
-        &data[..field::header::PAYLOAD_LENGTH.end + self.payload_length()]
+        let total_length = field::header::HEADER_LENGTH + self.payload_data_length();
+        &data[..total_length]
     }
 }
 
@@ -285,9 +286,10 @@ impl<'a, T: AsRef<[u8]> + AsMut<[u8]> + ?Sized> Packet<&'a mut T> {
     /// * `&'a mut [u8]` - A mutable reference to the entire message.
     #[inline]
     pub fn entire_message_mut(&mut self) -> &mut [u8] {
-        let payload_length = self.payload_length();
+        let payload_length = self.payload_data_length();
         let data = self.buffer.as_mut();
-        &mut data[..field::header::PAYLOAD_LENGTH.end + payload_length]
+        let total_length = field::header::HEADER_LENGTH + payload_length;
+        &mut data[..total_length]
     }
 }
 

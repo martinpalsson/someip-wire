@@ -41,7 +41,7 @@
 //! // Example SOME/IP packet bytes (16-byte header + payload)
 //! let buffer = [
 //!     0x12, 0x34, 0x00, 0x01, // Message ID (service 0x1234, method 0x0001)
-//!     0x00, 0x00, 0x00, 0x08, // Length (8 bytes payload)
+//!     0x00, 0x00, 0x00, 0x10, // Length
 //!     0x00, 0x01, 0x00, 0x00, // Request ID (client 0x0001, session 0x0000)
 //!     0x01,                   // Protocol version
 //!     0x01,                   // Interface version
@@ -72,7 +72,7 @@
 //!         service_id: 0x1234,
 //!         method_id: 0x0001,
 //!     },
-//!     length: 8,
+//!     length: 16,
 //!     request_id: RequestId {
 //!         client_id: ClientId {
 //!             client_id_prefix: 0x00,
@@ -197,7 +197,7 @@ mod tests {
     fn test_deconstruct_with_payload() {
         let raw_packet: [u8; 20] = [
             0x12, 0x34, 0x00, 0x01, // Message ID
-            0x00, 0x00, 0x00, 0x04, // Length
+            0x00, 0x00, 0x00, 0x0C, // Length (8 header bytes + 4 payload bytes)
             0x01, 0x02, 0x00, 0x01, // Request ID
             0x01, // Protocol Version
             0x01, // Interface Version
@@ -216,7 +216,7 @@ mod tests {
                 method_id: 0x0001,
             }
         );
-        assert_eq!(repr.length, 4);
+        assert_eq!(repr.length, 12);
 
         assert_eq!(
             repr.request_id,
@@ -239,7 +239,7 @@ mod tests {
     fn test_repr_parse() {
         let raw_packet: [u8; 16] = [
             0x12, 0x34, 0x00, 0x01, // Message ID
-            0x00, 0x00, 0x00, 0x00, // Length
+            0x00, 0x00, 0x00, 0x08, // Length
             0x01, 0x02, 0x00, 0x01, // Request ID
             0x01, // Protocol Version
             0x01, // Interface Version
@@ -257,7 +257,7 @@ mod tests {
                     service_id: 0x1234,
                     method_id: 0x0001,
                 },
-                length: 0,
+                length: 8,
                 request_id: RequestId {
                     client_id: ClientId {
                         client_id_prefix: 0x01,
@@ -281,7 +281,7 @@ mod tests {
                 service_id: 0x1234,
                 method_id: 0x0001,
             },
-            length: 4,
+            length: 12,
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x01,
@@ -300,7 +300,7 @@ mod tests {
         repr.emit(&mut packet);
         let expected: [u8; 20] = [
             0x12, 0x34, 0x00, 0x01, // Message ID
-            0x00, 0x00, 0x00, 0x04, // Length
+            0x00, 0x00, 0x00, 0x0C, // Length
             0x01, 0x02, 0x00, 0x01, // Request ID
             0x01, // Protocol Version
             0x01, // Interface Version
@@ -343,7 +343,7 @@ mod tests {
                 service_id: 0x1234,
                 method_id: 0x0001,
             },
-            length: 4,
+            length: 12,
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x01,
@@ -363,7 +363,7 @@ mod tests {
             &[
                 0x12, 0x34, // Service ID
                 0x00, 0x01, // Method ID
-                0x00, 0x00, 0x00, 0x04, // Length
+                0x00, 0x00, 0x00, 0x0C, // Length
                 0x01, 0x02, 0x00, 0x01, // Request ID
                 0x01, // Protocol version
                 0x01, // Interface version
@@ -381,7 +381,7 @@ mod tests {
                 service_id: 0x1234,
                 method_id: 0x0001,
             },
-            length: 2,
+            length: 10,
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x01,
@@ -429,7 +429,7 @@ mod tests {
                 service_id: 0x1234,
                 method_id: 0x0001,
             },
-            length: 8,
+            length: 16,
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x01,
@@ -477,7 +477,7 @@ mod tests {
                 service_id: 0xABCD,
                 method_id: 0x0042,
             },
-            length: 1,
+            length: 9, 
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x10,
@@ -501,7 +501,7 @@ mod tests {
                 service_id: 0x0001,
                 method_id: 0x0002,
             },
-            length: 3,
+            length: 11, 
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x00,
@@ -525,7 +525,7 @@ mod tests {
                 service_id: 0x9999,
                 method_id: 0x8888,
             },
-            length: 2,
+            length: 10, 
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0x00,
@@ -549,7 +549,7 @@ mod tests {
                 service_id: 0x4321,
                 method_id: 0x8765,
             },
-            length: 5,
+            length: 13,
             request_id: RequestId {
                 client_id: ClientId {
                     client_id_prefix: 0xAA,
