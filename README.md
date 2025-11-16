@@ -4,9 +4,15 @@
 [![Documentation](https://docs.rs/someip-wire/badge.svg)](https://docs.rs/someip-wire)
 [![License](https://img.shields.io/crates/l/someip-wire.svg)](https://github.com/martinpalsson/someip-wire#license)
 
-A `no_std` Rust crate for parsing and serializing SOME/IP (Scalable service-Oriented MiddlewarE over IP) wire protocol packets.
+A `no_std` Rust crate for parsing and serializing SOME/IP (Scalable service-Oriented MiddlewarE over IP) wire protocol packets. This crate is shamelessly inspired by the smoltcp crate.
 
 Based on the [AUTOSAR SOME/IP Protocol Specification](https://www.autosar.org/fileadmin/standards/R22-11/FO/AUTOSAR_PRS_SOMEIPProtocol.pdf).
+
+## Disclaimer
+
+**This crate is intended for educational and research purposes to study the SOME/IP protocol.**
+
+The SOME/IP protocol is an AUTOSAR standard. AUTOSAR claims intellectual property rights over their specifications.
 
 ## Scope
 
@@ -22,8 +28,6 @@ To build a complete SOME/IP stack using this crate:
 2. **Implement payload parsers** based on your service interface definitions
 3. **Route messages** by connecting service/method IDs to their respective payload handlers
 
-This separation of concerns keeps the crate focused, lightweight, and universally applicable across different SOME/IP service implementations and OEM-specific requirements.
-
 ## Features
 
 - **`no_std` compatible** - Works in embedded environments
@@ -38,7 +42,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-someip-wire = "0.1.0"
+someip-wire = "0.1.1"
 ```
 
 ## Examples
