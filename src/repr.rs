@@ -91,6 +91,7 @@ impl<'a> Repr<'a> {
             return Err(Error::BufferTooShort);
         }
 
+        // Safe: We've verified buffer length above, and these are fixed-size field ranges
         let message_id = MessageId::from_u32(u32::from_be_bytes(
             buffer[field::header::MESSAGE_ID].try_into().unwrap(),
         ));
