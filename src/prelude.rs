@@ -12,8 +12,10 @@
 //! // - Repr
 //! // - MessageId, RequestId, ClientId
 //! // - MessageType, ReturnCode
+//! // - Error
 //! ```
 
+pub use crate::error::Error;
 pub use crate::packet::Packet;
 pub use crate::repr::Repr;
 pub use crate::types::{ClientId, MessageId, MessageType, RequestId, ReturnCode};

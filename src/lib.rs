@@ -941,4 +941,78 @@ mod tests {
         // Test conversions - Display trait exists but we're in no_std so skip format! tests
         // The Display impl is tested implicitly when used with Repr
     }
+
+    #[test]
+    fn test_error_buffer_too_short() {
+        // Buffer with less than 16 bytes
+        let buffer = [0u8; 10];
+        let packet = Packet::new_unchecked(&buffer);
+        let result = Repr::parse(&packet);
+        
+        assert_eq!(result, Err(crate::error::Error::BufferTooShort));
+    }
+
+    #[test]
+    fn test_error_truncated() {
+        // Header claims 20 bytes payload but buffer only has 16 bytes total
+        let buffer = [
+            0x12, 0x34, 0x00, 0x01, // Message ID
+            0x00, 0x00, 0x00, 0x1C, // Length (28 = 8 header + 20 payload)
+            0x00, 0x01, 0x00, 0x00, // Request ID
+            0x01,                   // Protocol version
+            0x01,                   // Interface version
+            0x00,                   // Message type
+            0x00,                   // Return code
+            // No payload bytes, but header claims 20 bytes
+        ];
+        
+        let packet = Packet::new_unchecked(&buffer);
+        let result = Repr::parse(&packet);
+        
+        assert_eq!(result, Err(crate::error::Error::Truncated));
+    }
+
+    #[test]
+    fn test_error_invalid_message_type() {
+        let buffer = [
+            0x12, 0x34, 0x00, 0x01, // Message ID
+            0x00, 0x00, 0x00, 0x08, // Length
+            0x00, 0x01, 0x00, 0x00, // Request ID
+            0x01,                   // Protocol version
+            0x01,                   // Interface version
+            0xFF,                   // Invalid message type
+            0x00,                   // Return code
+        ];
+        
+        let packet = Packet::new_unchecked(&buffer);
+        let result = Repr::parse(&packet);
+        
+        assert_eq!(result, Err(crate::error::Error::InvalidMessageType(0xFF)));
+    }
+
+    #[test]
+    fn test_error_invalid_return_code() {
+        let buffer = [
+            0x12, 0x34, 0x00, 0x01, // Message ID
+            0x00, 0x00, 0x00, 0x08, // Length
+            0x00, 0x01, 0x00, 0x00, // Request ID
+            0x01,                   // Protocol version
+            0x01,                   // Interface version
+            0x00,                   // Message type (Request)
+            0xFF,                   // Invalid return code (0xFF > 0x5E)
+        ];
+        
+        let packet = Packet::new_unchecked(&buffer);
+        let result = Repr::parse(&packet);
+        
+        assert_eq!(result, Err(crate::error::Error::InvalidReturnCode(0xFF)));
+    }
+
+    #[test]
+    fn test_packet_new_checked_too_short() {
+        let buffer = [0u8; 10];
+        let result = Packet::new_checked(&buffer);
+        
+        assert_eq!(result, Err(crate::error::Error::BufferTooShort));
+    }
 }

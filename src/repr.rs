@@ -88,7 +88,7 @@ impl<'a> Repr<'a> {
         let buffer = packet.as_slice();
 
         if buffer.len() < field::header::HEADER_LENGTH {
-            return Err(Error);
+            return Err(Error::BufferTooShort);
         }
 
         let message_id = MessageId::from_u32(u32::from_be_bytes(
@@ -101,9 +101,11 @@ impl<'a> Repr<'a> {
         let protocol_version = buffer[field::header::PROTOCOL_VERSION.start];
         let interface_version = buffer[field::header::INTERFACE_VERSION.start];
         let message_type_byte = buffer[field::header::MESSAGE_TYPE.start];
-        let message_type = MessageType::from_u8(message_type_byte).ok_or(Error)?;
+        let message_type = MessageType::from_u8(message_type_byte)
+            .ok_or(Error::InvalidMessageType(message_type_byte))?;
         let return_code_byte = buffer[field::header::RETURN_CODE.start];
-        let return_code = crate::types::ReturnCode::from_u8(return_code_byte).ok_or(Error)?;
+        let return_code = crate::types::ReturnCode::from_u8(return_code_byte)
+            .ok_or(Error::InvalidReturnCode(return_code_byte))?;
 
         // Length includes Request ID (4) + Protocol Version (1) + Interface Version (1) 
         // + Message Type (1) + Return Code (1) + Payload = 8 bytes + payload
@@ -111,7 +113,7 @@ impl<'a> Repr<'a> {
         let payload_length = length.saturating_sub(8); // Subtract the 8 header bytes after Message ID
         let payload_end = payload_start + (payload_length as usize);
         if buffer.len() < payload_end {
-            return Err(Error);
+            return Err(Error::Truncated);
         }
         let data = &buffer[payload_start..payload_end];
 

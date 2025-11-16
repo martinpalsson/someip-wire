@@ -47,7 +47,7 @@ impl<T: AsRef<[u8]>> Packet<T> {
         let packet = Self::new_unchecked(buffer);
         match packet.check_len() {
             Ok(_) => Ok(packet),
-            Err(_) => Err(Error),
+            Err(e) => Err(e),
         }
     }
 
@@ -59,7 +59,7 @@ impl<T: AsRef<[u8]>> Packet<T> {
     pub fn check_len(&self) -> Result<()> {
         let len = self.buffer.as_ref().len();
         if len < field::header::HEADER_LENGTH {
-            Err(Error)
+            Err(Error::BufferTooShort)
         } else {
             Ok(())
         }
