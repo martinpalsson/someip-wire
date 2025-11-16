@@ -8,6 +8,7 @@ use crate::types::{MessageId, RequestId};
 use byteorder::{ByteOrder, NetworkEndian};
 use core::fmt;
 
+/// Result type for packet operations.
 #[allow(dead_code)]
 pub type Result<T> = core::result::Result<T, Error>;
 

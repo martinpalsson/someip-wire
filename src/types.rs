@@ -3,7 +3,9 @@ use core::fmt::{self, Display};
 /// Struct representation of MessageID
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct MessageId {
+    /// Service ID (upper 16 bits of Message ID)
     pub service_id: u16,
+    /// Method ID or Event ID (lower 16 bits of Message ID)
     pub method_id: u16,
 }
 
@@ -42,7 +44,9 @@ impl Display for MessageId {
 /// Struct representation of ClientID
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ClientId {
+    /// Client ID prefix (upper 8 bits)
     pub client_id_prefix: u8,
+    /// Client ID (lower 8 bits)
     pub client_id: u8,
 }
 
@@ -82,7 +86,9 @@ impl Display for ClientId {
 /// Struct representation of RequestID
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct RequestId {
+    /// Client ID (upper 16 bits of Request ID)
     pub client_id: ClientId,
+    /// Session ID (lower 16 bits of Request ID)
     pub session_id: u16,
 }
 

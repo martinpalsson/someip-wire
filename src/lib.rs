@@ -154,13 +154,20 @@
 //! This design ensures zero-cost abstractions while maintaining a pleasant developer experience.
 //!
 
-#![no_std]
+#![cfg_attr(not(test), no_std)]
+#![warn(missing_docs)]
 
+/// Error types for SOME/IP packet parsing and serialization.
 pub mod error;
+/// Field definitions and byte ranges for the SOME/IP header.
 pub mod field;
+/// Low-level packet access for wire format operations.
 pub mod packet;
+/// Commonly used types re-exported for convenience.
 pub mod prelude;
+/// High-level SOME/IP message representation.
 pub mod repr;
+/// SOME/IP type definitions (MessageId, RequestId, MessageType, ReturnCode).
 pub mod types;
 
 #[cfg(test)]

@@ -71,6 +71,16 @@ impl<'a> Repr<'a> {
     pub fn length(&self) -> u32 {
         self.length
     }
+
+    /// Parse a SOME/IP packet buffer into a high-level representation.
+    ///
+    /// # Arguments
+    ///
+    /// * `packet` - The packet buffer to parse
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Repr` on success, or an `Error` if the packet is malformed.
     pub fn parse<T>(packet: &'a Packet<T>) -> core::result::Result<Repr<'a>, Error>
     where
         T: AsRef<[u8]>,
