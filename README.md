@@ -50,8 +50,7 @@ someip-wire = "0.1.1"
 ### Parsing a SOME/IP packet
 
 ```rust
-use someip_wire::packet::Packet;
-use someip_wire::payload::Repr;
+use someip_wire::prelude::*;
 
 let buffer = [
     0x12, 0x34, 0x00, 0x01, // Message ID
@@ -76,9 +75,7 @@ assert_eq!(repr.data.len(), 8);
 ### Creating a SOME/IP packet
 
 ```rust
-use someip_wire::packet::Packet;
-use someip_wire::payload::Repr;
-use someip_wire::types::{MessageId, RequestId, ClientId, MessageType, ReturnCode};
+use someip_wire::prelude::*;
 
 let repr = Repr {
     message_id: MessageId {
@@ -110,7 +107,7 @@ repr.emit(&mut packet);
 ### Working with return codes
 
 ```rust
-use someip_wire::types::ReturnCode;
+use someip_wire::prelude::*;
 
 // Named return codes
 let ok = ReturnCode::E_OK;
@@ -130,7 +127,7 @@ assert!(someip_reserved.is_reserved_someip());
 The crate uses a two-layer architecture:
 
 - **Wire format layer** (`packet` module) - Works directly with raw bytes using u8 values for maximum efficiency
-- **Representation layer** (`payload`, `types` modules) - Provides type-safe enums and structs for ergonomic API
+- **Representation layer** (`repr`, `types` modules) - Provides type-safe enums and structs for ergonomic API
 
 This ensures zero-cost abstractions while maintaining a pleasant developer experience.
 

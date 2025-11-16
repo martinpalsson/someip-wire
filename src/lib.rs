@@ -35,7 +35,7 @@
 //!
 //! ```rust
 //! use someip_wire::packet::Packet;
-//! use someip_wire::payload::Repr;
+//! use someip_wire::repr::Repr;
 //! use someip_wire::types::{MessageId, RequestId, MessageType, ReturnCode};
 //!
 //! // Example SOME/IP packet bytes (16-byte header + payload)
@@ -64,7 +64,7 @@
 //!
 //! ```rust
 //! use someip_wire::packet::Packet;
-//! use someip_wire::payload::Repr;
+//! use someip_wire::repr::Repr;
 //! use someip_wire::types::{MessageId, RequestId, ClientId, MessageType, ReturnCode};
 //!
 //! // Use Repr::new() to automatically calculate the length field
@@ -116,19 +116,40 @@
 //! assert!(service_reserved.is_reserved_service_method());
 //! ```
 //!
+//! ### Using the prelude for convenience
+//!
+//! ```rust
+//! use someip_wire::prelude::*;
+//!
+//! // All commonly used types are now available
+//! let repr = Repr::new(
+//!     MessageId { service_id: 0x1234, method_id: 0x0001 },
+//!     RequestId {
+//!         client_id: ClientId { client_id_prefix: 0x00, client_id: 0x01 },
+//!         session_id: 0x0000,
+//!     },
+//!     0x01, // protocol_version
+//!     0x01, // interface_version
+//!     MessageType::Request,
+//!     ReturnCode::E_OK,
+//!     &[0xDE, 0xAD],
+//! );
+//! ```
+//!
 //! ## Modules
 //!
 //! - `error`: Contains the error type for SOME/IP packet parsing
 //! - `field`: Contains the field definitions for the SOME/IP header
 //! - `packet`: Contains the `Packet` type for low-level packet access (wire format)
-//! - `payload`: Contains the `Repr` type for high-level SOME/IP representation
+//! - `prelude`: Re-exports commonly used types for convenient imports
+//! - `repr`: Contains the `Repr` type for high-level SOME/IP representation
 //! - `types`: Contains SOME/IP type definitions (MessageId, RequestId, ReturnCode, MessageType)
 //!
 //! ## Architecture
 //!
 //! The crate uses a two-layer architecture:
 //! - **Wire format layer** (`packet`): Works directly with u8 values for efficiency
-//! - **Representation layer** (`payload`, `types`): Provides clean enums and type-safe APIs
+//! - **Representation layer** (`repr`, `types`): Provides clean enums and type-safe APIs
 //!
 //! This design ensures zero-cost abstractions while maintaining a pleasant developer experience.
 //!
@@ -138,14 +159,15 @@
 pub mod error;
 pub mod field;
 pub mod packet;
-pub mod payload;
+pub mod prelude;
+pub mod repr;
 pub mod types;
 
 #[cfg(test)]
 mod tests {
     use crate::{
         packet::Packet,
-        payload::Repr,
+        repr::Repr,
         types::{ClientId, MessageId, MessageType, RequestId, ReturnCode},
     };
 
