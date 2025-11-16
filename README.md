@@ -20,29 +20,13 @@ The SOME/IP protocol is an AUTOSAR standard. AUTOSAR claims intellectual propert
 
 The crate parses the standardized 16-byte SOME/IP header and provides the payload data as a raw byte slice. It does NOT parse the payload content itself, as payload format is entirely application-specific and defined by service interface definitions (e.g., FIDL/Franca IDL).
 
-### Architecture
-
-To build a complete SOME/IP stack using this crate:
-
-1. **Use `someip-wire`** to parse/emit SOME/IP headers (this crate)
-2. **Implement payload parsers** based on your service interface definitions
-3. **Route messages** by connecting service/method IDs to their respective payload handlers
-
-## Features
-
-- **`no_std` compatible** - Works in embedded environments
-- **Zero-allocation** - All operations work on borrowed data
-- **Type-safe API** - Clean enums for message types and return codes
-- **Efficient wire format** - Direct u8 operations at the packet level
-- **Two-layer architecture** - Low-level packet access + high-level representation
-
 ## Usage
 
 Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-someip-wire = "0.1.1"
+someip-wire = "0.1.2"
 ```
 
 ## Examples
@@ -104,32 +88,12 @@ repr.emit(&mut packet);
 
 **Note:** The `data` field contains your service-specific payload. You are responsible for serializing/deserializing this based on your service interface definitions.
 
-### Working with return codes
-
-```rust
-use someip_wire::prelude::*;
-
-// Named return codes
-let ok = ReturnCode::E_OK;
-let timeout = ReturnCode::E_TIMEOUT;
-
-// Reserved ranges
-let someip_reserved = ReturnCode::ReservedSomeIP(0x15);
-let service_reserved = ReturnCode::ReservedServiceMethod(0x30);
-
-// Check properties
-assert!(ok.is_ok());
-assert!(someip_reserved.is_reserved_someip());
-```
-
 ## Architecture
 
 The crate uses a two-layer architecture:
 
 - **Wire format layer** (`packet` module) - Works directly with raw bytes using u8 values for maximum efficiency
 - **Representation layer** (`repr`, `types` modules) - Provides type-safe enums and structs for ergonomic API
-
-This ensures zero-cost abstractions while maintaining a pleasant developer experience.
 
 ## License
 
